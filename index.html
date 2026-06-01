@@ -158,13 +158,13 @@
       <label>Время смены</label>
       <div class="row">
         <div class="field" style="margin-bottom:6px">
-          <input type="text" id="start" inputmode="numeric" placeholder="с 6.00">
+          <input type="text" id="start" inputmode="numeric" placeholder="6:00">
         </div>
         <div class="field" style="margin-bottom:6px">
-          <input type="text" id="end" inputmode="numeric" placeholder="по 14.12">
+          <input type="text" id="end" inputmode="numeric" placeholder="14:12">
         </div>
       </div>
-      <div class="hint">Формат: 6.00 и 14.12 (можно через точку или двоеточие)</div>
+      <div class="hint">Вводи только цифры — двоеточие поставится само (600 → 6:00)</div>
 
       <div class="field" style="margin-top:14px">
         <label>Паузы всего, минут</label>
@@ -368,6 +368,17 @@ document.querySelectorAll('.tab').forEach(t=>{
     $('view-history').style.display = v==='history'?'block':'none';
     if(v==='history') renderHistory();
   });
+});
+
+// авто-двоеточие в полях времени: 600 -> 6:00, 1412 -> 14:12
+function autoTime(el){
+  let d = el.value.replace(/\D/g,'').slice(0,4);   // только цифры, максимум 4
+  if(d.length>=3) d = d.slice(0, d.length-2) + ':' + d.slice(-2);
+  el.value = d;
+}
+['start','end'].forEach(id=>{
+  const el = $(id);
+  el.addEventListener('input', ()=>autoTime(el));
 });
 
 $('btnCalc').addEventListener('click', calculate);
