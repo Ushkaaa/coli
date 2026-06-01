@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffdd00">
+<!-- Полноэкранный режим на iPhone (после «На экран Домой») -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Коли/час">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<title>Коли в час</title>
+<style>
+  :root{
+    /* фирменные цвета EDEKA */
+    --yellow:#ffdd00; --yellow-d:#f5c400;
+    --blue:#0a3d8f; --blue-d:#072a63; --blue-l:#1456c4;
+    --card:#ffffff; --card2:#fff8d6;
+    --ok:#1aa55a; --danger:#e23b4d;
+    --text:#0a2342; --muted:#5a6a85; --line:#e6e2c2;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--yellow);
+    background-image:radial-gradient(circle at 100% 0%, #ffe84d 0%, rgba(255,232,77,0) 45%),
+                     radial-gradient(circle at 0% 100%, #ffe84d 0%, rgba(255,232,77,0) 40%);
+    color:var(--text); min-height:100vh;
+    /* учёт «чёлки» и нижней панели iPhone */
+    padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 24px);
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:520px; margin:0 auto;}
+
+  /* шапка — синий брендовый баннер */
+  header{
+    display:flex; align-items:center; gap:13px; margin-bottom:16px;
+    background:linear-gradient(135deg,var(--blue),var(--blue-l));
+    border-radius:18px; padding:15px 18px;
+    box-shadow:0 8px 22px rgba(10,61,143,.28);
+  }
+  header .logo{
+    width:50px; height:50px; border-radius:12px;
+    background:var(--yellow);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:14px; color:var(--blue); letter-spacing:.3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.18);
+  }
+  header h1{font-size:20px; margin:0; font-weight:800; letter-spacing:.2px; color:#fff;}
+  header p{margin:3px 0 0; font-size:12px; color:#bcd2ff;}
+
+  .tabs{display:flex; gap:6px; margin-bottom:16px; background:#fff; padding:5px; border-radius:14px; box-shadow:0 3px 12px rgba(10,61,143,.1);}
+  .tab{flex:1; text-align:center; padding:11px; border-radius:10px; font-size:14px; font-weight:700; color:var(--muted); cursor:pointer; transition:.2s;}
+  .tab.active{background:var(--blue); color:#fff; box-shadow:0 4px 12px rgba(10,61,143,.3);}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; box-shadow:0 6px 18px rgba(10,61,143,.1);}
+  label{display:block; font-size:13px; color:var(--blue); margin:0 0 7px 2px; font-weight:700;}
+  .row{display:flex; gap:10px;}
+  .row .field{flex:1;}
+  input{
+    width:100%; padding:14px; font-size:17px; border-radius:12px;
+    background:var(--card2); border:1.5px solid var(--line); color:var(--text);
+    outline:none; transition:border .15s; font-weight:600;
+  }
+  input:focus{border-color:var(--blue); background:#fff;}
+  input::placeholder{color:#b3a96a; font-weight:500;}
+  .field{margin-bottom:14px;}
+  .hint{font-size:11px; color:var(--muted); margin:6px 2px 0;}
+
+  button.calc{
+    width:100%; padding:16px; font-size:18px; font-weight:800; border:none; border-radius:14px;
+    background:var(--blue); color:var(--yellow);
+    cursor:pointer; box-shadow:0 8px 20px rgba(10,61,143,.35); margin-top:4px; letter-spacing:.3px;
+  }
+  button.calc:active{transform:translateY(1px); background:var(--blue-d);}
+
+  .result{
+    text-align:center; padding:24px 18px; margin-top:14px; border-radius:18px;
+    background:linear-gradient(135deg,var(--blue),var(--blue-l)); display:none;
+    box-shadow:0 10px 26px rgba(10,61,143,.3);
+  }
+  .result.show{display:block; animation:pop .25s ease;}
+  @keyframes pop{from{transform:scale(.96); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .result .big{font-size:58px; font-weight:900; line-height:1; color:var(--yellow); text-shadow:0 2px 8px rgba(0,0,0,.2);}
+  .result .unit{font-size:15px; color:#cfe0ff; margin-top:6px; font-weight:600;}
+  .breakdown{margin-top:18px; text-align:left; font-size:13px; color:#cfe0ff; border-top:1px solid rgba(255,255,255,.18); padding-top:14px;}
+  .breakdown .b{display:flex; justify-content:space-between; padding:5px 0;}
+  .breakdown .b b{color:#fff; font-weight:700;}
+
+  .saverow{display:flex; gap:10px; margin-top:16px;}
+  .saverow button{flex:1; padding:14px; font-size:15px; font-weight:800; border-radius:12px; border:none; cursor:pointer;}
+  .btn-save{background:var(--yellow); color:var(--blue);}
+  .btn-save:active{background:var(--yellow-d);}
+
+  .err{color:#fff; background:var(--danger); font-size:13px; margin-top:10px; display:none; text-align:center; padding:10px; border-radius:10px; font-weight:600;}
+  .err.show{display:block;}
+
+  /* История */
+  #view-history{display:none;}
+  .hist-empty{text-align:center; color:var(--blue); padding:40px 16px; font-size:14px; background:#fff; border-radius:16px; box-shadow:0 6px 18px rgba(10,61,143,.1); font-weight:600;}
+  .month-group{margin-bottom:18px;}
+  .month-title{font-size:13px; color:var(--blue); font-weight:800; text-transform:capitalize; margin:0 4px 8px; letter-spacing:.3px;}
+  .month-sum{display:flex; gap:9px; margin:0 0 11px;}
+  .month-sum .ms{flex:1; background:#fff; border:1.5px solid var(--blue); border-radius:12px; padding:9px 11px; text-align:center; box-shadow:0 3px 10px rgba(10,61,143,.1);}
+  .month-sum .ms .v{font-size:19px; font-weight:900; color:var(--blue); line-height:1;}
+  .month-sum .ms .l{font-size:10px; color:var(--muted); margin-top:3px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
+  .hist-item{
+    display:flex; align-items:center; gap:14px; background:var(--card);
+    border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:9px;
+    box-shadow:0 4px 12px rgba(10,61,143,.08);
+  }
+  .hist-date{display:flex; flex-direction:column; min-width:50px; align-items:center; background:var(--yellow); border-radius:10px; padding:7px 4px;}
+  .hist-date .d{font-size:22px; font-weight:900; line-height:1; color:var(--blue);}
+  .hist-date .wd{font-size:11px; color:var(--blue-d); text-transform:capitalize; margin-top:2px; font-weight:700;}
+  .hist-mid{flex:1;}
+  .hist-mid .res{font-size:22px; font-weight:900; color:var(--blue);}
+  .hist-mid .res small{font-size:12px; font-weight:700; color:var(--muted);}
+  .hist-mid .sub{font-size:11px; color:var(--muted); margin-top:3px; font-weight:500;}
+  .hist-del{background:none; border:none; color:#c2bfa0; font-size:20px; cursor:pointer; padding:6px;}
+  .hist-del:active{color:var(--danger);}
+  .stat-bar{display:flex; gap:10px; margin-bottom:16px;}
+  .stat{flex:1; background:var(--blue); border-radius:14px; padding:14px 10px; text-align:center; box-shadow:0 6px 16px rgba(10,61,143,.22);}
+  .stat .v{font-size:24px; font-weight:900; color:var(--yellow);}
+  .stat .l{font-size:11px; color:#cfe0ff; margin-top:3px; font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">EDEKA</div>
+    <div>
+      <h1>Коли в час</h1>
+      <p>Подсчёт выработки за смену</p>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-view="calc">Калькулятор</div>
+    <div class="tab" data-view="history">Календарь</div>
+  </div>
+
+  <!-- ===== КАЛЬКУЛЯТОР ===== -->
+  <div id="view-calc">
+    <div class="card">
+      <div class="field">
+        <label>Дата смены</label>
+        <input type="date" id="date">
+      </div>
+
+      <label>Время смены</label>
+      <div class="row">
+        <div class="field" style="margin-bottom:6px">
+          <input type="text" id="start" inputmode="numeric" placeholder="с 6.00">
+        </div>
+        <div class="field" style="margin-bottom:6px">
+          <input type="text" id="end" inputmode="numeric" placeholder="по 14.12">
+        </div>
+      </div>
+      <div class="hint">Формат: 6.00 и 14.12 (можно через точку или двоеточие)</div>
+
+      <div class="field" style="margin-top:14px">
+        <label>Паузы всего, минут</label>
+        <input type="text" id="pause" inputmode="numeric" placeholder="напр. 30">
+      </div>
+
+      <div class="field">
+        <label>Сделано коробок (коли) всего</label>
+        <input type="text" id="boxes" inputmode="numeric" placeholder="напр. 1450">
+      </div>
+
+      <button class="calc" id="btnCalc">Посчитать</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="big" id="rBig">—</div>
+      <div class="unit">коробок в час</div>
+      <div class="breakdown" id="rBreak"></div>
+      <div class="saverow">
+        <button class="btn-save" id="btnSave">💾 Сохранить в календарь</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== КАЛЕНДАРЬ / ИСТОРИЯ ===== -->
+  <div id="view-history">
+    <div class="stat-bar" id="statBar"></div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const STORE_KEY = 'coli_history_v1';
+const WD = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+const WD_SHORT = ['вс','пн','вт','ср','чт','пт','сб'];
+const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+
+// дата по умолчанию — сегодня
+(function(){
+  const d = new Date();
+  const iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('date').value = iso;
+})();
+
+// разбор времени "6.00" / "6:00" / "600" -> минуты
+function parseTime(s){
+  s = (s||'').trim().replace(/^(с|по)\s*/i,'').replace(',', '.');
+  if(!s) return null;
+  let h, m;
+  if(s.includes(':') || s.includes('.')){
+    const parts = s.split(/[:.]/);
+    h = parseInt(parts[0],10); m = parseInt(parts[1]||'0',10);
+  } else if(/^\d{3,4}$/.test(s)){
+    h = parseInt(s.slice(0,s.length-2),10); m = parseInt(s.slice(-2),10);
+  } else { h = parseInt(s,10); m = 0; }
+  if(isNaN(h)||isNaN(m)||h<0||h>23||m<0||m>59) return null;
+  return h*60+m;
+}
+function num(s){ const v = parseFloat((s||'').toString().replace(',', '.')); return isNaN(v)?null:v; }
+function fmtDur(min){
+  min = Math.round(min);
+  const h = Math.floor(min/60), m = min%60;
+  if(h>0 && m>0) return h+' ч '+m+' мин';
+  if(h>0) return h+' ч';
+  return m+' мин';
+}
+
+let lastCalc = null;
+
+function calculate(){
+  $('err').classList.remove('show');
+  $('result').classList.remove('show');
+
+  const startMin = parseTime($('start').value);
+  const endMin   = parseTime($('end').value);
+  const pause    = num($('pause').value) ?? 0;
+  const boxes    = num($('boxes').value);
+
+  if(startMin===null || endMin===null){ return showErr('Проверь время смены (напр. 6.00 и 14.12)'); }
+  if(boxes===null || boxes<=0){ return showErr('Введи количество коробок'); }
+
+  let gross = endMin - startMin;
+  if(gross < 0) gross += 24*60;            // смена через полночь
+  if(gross <= 0) return showErr('Время «по» должно быть позже «с»');
+
+  // замотка палетов: пропорционально, база 8 ч (480 мин), максимум 15 мин
+  const wrap = Math.min(15, 15 * gross / 480);
+
+  const net = gross - pause - wrap;
+  if(net <= 0) return showErr('Паузы больше, чем сама смена — проверь данные');
+
+  const perHour = boxes / (net/60);
+
+  lastCalc = {
+    date: $('date').value,
+    perHour: Math.round(perHour*10)/10,
+    boxes, gross, pause, wrap:Math.round(wrap*10)/10, net:Math.round(net)
+  };
+
+  $('rBig').textContent = Math.round(perHour);
+  $('rBreak').innerHTML =
+    row('Время смены', fmtDur(gross)) +
+    row('Паузы', '− '+fmtDur(pause)) +
+    row('Замотка палетов', '− '+fmtDur(wrap)+(gross<480?' (пропорц.)':'')) +
+    row('Чистое время', '<b>'+fmtDur(net)+'</b>') +
+    row('Коробок всего', '<b>'+boxes+'</b>') +
+    row('Точный результат', '<b>'+(Math.round(perHour*10)/10)+' /час</b>');
+  $('result').classList.add('show');
+}
+function row(k,v){ return '<div class="b"><span>'+k+'</span><span>'+v+'</span></div>'; }
+function showErr(msg){ const e=$('err'); e.textContent=msg; e.classList.add('show'); }
+
+// ===== хранилище =====
+function load(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; } }
+function save(arr){ localStorage.setItem(STORE_KEY, JSON.stringify(arr)); }
+
+function saveEntry(){
+  if(!lastCalc) return;
+  const arr = load();
+  const i = arr.findIndex(x=>x.date===lastCalc.date);
+  if(i>=0){
+    if(!confirm('За '+lastCalc.date+' уже есть запись. Заменить?')) return;
+    arr[i] = lastCalc;
+  } else arr.push(lastCalc);
+  save(arr);
+  $('btnSave').textContent = '✅ Сохранено';
+  setTimeout(()=>{ $('btnSave').textContent='💾 Сохранить в календарь'; }, 1500);
+  renderHistory();
+}
+
+function delEntry(date){
+  if(!confirm('Удалить запись за '+date+'?')) return;
+  save(load().filter(x=>x.date!==date));
+  renderHistory();
+}
+
+function renderHistory(){
+  const arr = load().sort((a,b)=> b.date.localeCompare(a.date));
+  const list = $('histList'), stat = $('statBar');
+  if(arr.length===0){
+    stat.innerHTML='';
+    list.innerHTML = '<div class="hist-empty">Пока нет сохранённых смен.<br>Посчитай выработку и нажми «Сохранить в календарь».</div>';
+    return;
+  }
+  // статистика
+  const vals = arr.map(x=>x.perHour);
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  const best = Math.max(...vals);
+  stat.innerHTML =
+    '<div class="stat"><div class="v">'+arr.length+'</div><div class="l">смен</div></div>'+
+    '<div class="stat"><div class="v">'+Math.round(avg)+'</div><div class="l">в среднем /час</div></div>'+
+    '<div class="stat"><div class="v">'+Math.round(best)+'</div><div class="l">рекорд /час</div></div>';
+
+  // группировка по месяцам (arr уже отсортирован по убыванию даты)
+  const groups = [];
+  arr.forEach(x=>{
+    const d = new Date(x.date+'T00:00:00');
+    const key = d.getFullYear()+'-'+d.getMonth();
+    let g = groups.find(g=>g.key===key);
+    if(!g){ g = {key, label:MONTHS[d.getMonth()]+' '+d.getFullYear(), items:[]}; groups.push(g); }
+    g.items.push({x, day:d.getDate(), wd:WD_SHORT[d.getDay()]});
+  });
+
+  let html='';
+  groups.forEach(g=>{
+    const cnt = g.items.length;
+    const avg = g.items.reduce((a,b)=>a+b.x.perHour,0)/cnt;       // средняя выработка за месяц
+    const totNet = g.items.reduce((a,b)=>a+b.x.net,0);            // чистые минуты за месяц
+    html += '<div class="month-group">';
+    html += '<div class="month-title">'+g.label+'</div>';
+    html += '<div class="month-sum">'+
+              '<div class="ms"><div class="v">'+Math.round(avg)+'</div><div class="l">средн. кор/час</div></div>'+
+              '<div class="ms"><div class="v">'+fmtDur(totNet)+'</div><div class="l">чистых часов</div></div>'+
+            '</div>';
+    g.items.forEach(it=>{
+      const x = it.x;
+      html +=
+        '<div class="hist-item">'+
+          '<div class="hist-date"><span class="d">'+it.day+'</span><span class="wd">'+it.wd+'</span></div>'+
+          '<div class="hist-mid">'+
+            '<div class="res">'+Math.round(x.perHour)+' <small>кор./час</small></div>'+
+            '<div class="sub">'+x.boxes+' кор · '+fmtDur(x.net)+' чистыми</div>'+
+          '</div>'+
+          '<button class="hist-del" onclick="delEntry(\''+x.date+'\')">🗑</button>'+
+        '</div>';
+    });
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ===== вкладки =====
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const v = t.dataset.view;
+    $('view-calc').style.display = v==='calc'?'block':'none';
+    $('view-history').style.display = v==='history'?'block':'none';
+    if(v==='history') renderHistory();
+  });
+});
+
+$('btnCalc').addEventListener('click', calculate);
+$('btnSave').addEventListener('click', saveEntry);
+renderHistory();
+
+// регистрация service worker (офлайн-режим)
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
