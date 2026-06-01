@@ -68,6 +68,10 @@
   }
   input:focus{border-color:var(--blue); background:#fff;}
   input::placeholder{color:#b3a96a; font-weight:500;}
+  /* iOS: у поля даты своя «нативная» ширина — сбрасываем, чтобы не вылезало за карточку */
+  input[type=date]{ -webkit-appearance:none; appearance:none; min-width:0; max-width:100%; display:block; }
+  input[type=date]::-webkit-date-and-time-value{ text-align:left; margin:0; }
+  input[type=date]::-webkit-calendar-picker-indicator{ margin-left:auto; }
   .field{margin-bottom:14px;}
   .hint{font-size:11px; color:var(--muted); margin:6px 2px 0;}
 
