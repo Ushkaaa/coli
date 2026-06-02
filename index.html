@@ -166,18 +166,34 @@
 <!-- Заставка при запуске -->
 <div id="splash">
   <div class="sp-logo">
-    <svg viewBox="0 0 120 145" width="150" height="181" xmlns="http://www.w3.org/2000/svg" aria-label="EDEKA">
-      <rect x="2" y="2" width="116" height="141" rx="11" fill="#0a3d8f"/>
-      <rect x="5.5" y="5.5" width="109" height="134" rx="8.5" fill="#ffdd00"/>
-      <rect x="14" y="13" width="92" height="86" rx="3" fill="#0a3d8f"/>
-      <g fill="#ffdd00">
-        <rect x="30" y="23" width="14" height="66"/>
-        <rect x="30" y="23" width="50" height="13"/>
-        <rect x="30" y="44" width="40" height="12"/>
-        <rect x="30" y="76" width="50" height="13"/>
+    <svg viewBox="0 0 200 240" width="160" height="192" xmlns="http://www.w3.org/2000/svg" aria-label="EDEKA">
+      <defs>
+        <linearGradient id="edBlue" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1a5bb8"/>
+          <stop offset="1" stop-color="#063576"/>
+        </linearGradient>
+        <linearGradient id="edYellow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe642"/>
+          <stop offset="1" stop-color="#f4c400"/>
+        </linearGradient>
+      </defs>
+      <!-- синяя кромка + жёлтая объёмная рамка -->
+      <rect x="0" y="0" width="200" height="240" rx="26" fill="#072a63"/>
+      <rect x="7" y="7" width="186" height="226" rx="20" fill="url(#edYellow)"/>
+      <rect x="7" y="7" width="186" height="120" rx="20" fill="#ffffff" opacity="0.16"/>
+      <!-- синее поле -->
+      <rect x="24" y="22" width="152" height="152" rx="9" fill="#072a63"/>
+      <rect x="26" y="24" width="148" height="148" rx="8" fill="url(#edBlue)"/>
+      <!-- буква E -->
+      <g fill="url(#edYellow)" stroke="#072a63" stroke-width="0.6">
+        <rect x="54" y="45" width="27" height="106" rx="1.5"/>
+        <rect x="54" y="45" width="92" height="27" rx="1.5"/>
+        <rect x="54" y="86" width="72" height="24" rx="1.5"/>
+        <rect x="54" y="124" width="92" height="27" rx="1.5"/>
       </g>
-      <text x="60" y="127" text-anchor="middle" textLength="86" lengthAdjust="spacingAndGlyphs"
-            font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="27" fill="#0a3d8f">EDEKA</text>
+      <!-- надпись EDEKA -->
+      <text x="100" y="213" text-anchor="middle" textLength="150" lengthAdjust="spacingAndGlyphs"
+            font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="44" fill="#072a63">EDEKA</text>
     </svg>
   </div>
   <div class="sp-slogan">Berechne deine Leistung einfach</div>
