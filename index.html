@@ -130,9 +130,51 @@
   .stat{flex:1; background:var(--blue); border-radius:14px; padding:14px 10px; text-align:center; box-shadow:0 6px 16px rgba(10,61,143,.22);}
   .stat .v{font-size:24px; font-weight:900; color:var(--yellow);}
   .stat .l{font-size:11px; color:#cfe0ff; margin-top:3px; font-weight:600;}
+
+  /* ===== Заставка при запуске ===== */
+  #splash{
+    position:fixed; inset:0; z-index:9999;
+    background:var(--yellow);
+    background-image:radial-gradient(circle at 50% 38%, #ffe84d 0%, var(--yellow) 60%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  #splash.hide{ opacity:0; transform:scale(1.08); pointer-events:none; }
+  .sp-logo{
+    font-size:46px; font-weight:900; letter-spacing:1px; color:var(--blue);
+    opacity:0; transform:scale(.5);
+    animation:spLogo .6s cubic-bezier(.2,.8,.2,1.2) forwards, spPulse 1.4s ease-in-out .7s infinite;
+  }
+  .sp-num{
+    display:flex; align-items:baseline; gap:8px; color:var(--blue);
+    opacity:0; animation:spFadeUp .5s ease .45s forwards;
+  }
+  .sp-num span{ font-size:40px; font-weight:900; line-height:1; }
+  .sp-num i{ font-size:15px; font-weight:700; font-style:normal; color:var(--blue-d); opacity:.8; }
+  .sp-bar{
+    width:160px; height:7px; border-radius:99px; background:rgba(10,61,143,.18); overflow:hidden;
+    opacity:0; animation:spFadeUp .4s ease .5s forwards;
+  }
+  .sp-bar span{ display:block; height:100%; width:0; border-radius:99px; background:var(--blue);
+    animation:spBar 1.2s ease .55s forwards; }
+
+  @keyframes spLogo{ 0%{opacity:0; transform:scale(.5)} 60%{opacity:1; transform:scale(1.1)} 100%{opacity:1; transform:scale(1)} }
+  @keyframes spPulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  @keyframes spFadeUp{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes spBar{ from{width:0} to{width:100%} }
+  @media (prefers-reduced-motion:reduce){
+    .sp-logo,.sp-num,.sp-bar,.sp-bar span{ animation-duration:.01s !important; opacity:1 !important; }
+  }
 </style>
 </head>
 <body>
+<!-- Заставка при запуске -->
+<div id="splash">
+  <div class="sp-logo">EDEKA</div>
+  <div class="sp-num"><span id="spN">0</span><i>кор/час</i></div>
+  <div class="sp-bar"><span></span></div>
+</div>
+
 <div class="wrap">
   <header>
     <div class="logo">EDEKA</div>
@@ -384,6 +426,21 @@ function autoTime(el){
 $('btnCalc').addEventListener('click', calculate);
 $('btnSave').addEventListener('click', saveEntry);
 renderHistory();
+
+// ===== анимация заставки =====
+(function(){
+  const sp = $('splash'); if(!sp) return;
+  const nEl = $('spN'), target = 195, dur = 1100, t0 = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);           // плавное замедление
+    nEl.textContent = Math.round(eased * target);
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setTimeout(()=> sp.classList.add('hide'), 1850);  // плавный уход
+  setTimeout(()=>{ sp.style.display = 'none'; }, 2400);
+})();
 
 // регистрация service worker (офлайн-режим)
 if('serviceWorker' in navigator){
