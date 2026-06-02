@@ -1,5 +1,5 @@
 // Service worker — офлайн-режим
-const CACHE = 'coli-v6';
+const CACHE = 'coli-v7';
 const ASSETS = [
   './',
   './index.html',
